@@ -4,9 +4,8 @@ import { load, type Store } from '@tauri-apps/plugin-store'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { useMessage } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
-import { AlarmClock, Armchair, Bot } from '@lucide/vue'
+import { AlarmClock, Armchair } from '@lucide/vue'
 import RestPluginPanel from '../../components/plugins/RestPluginPanel.vue'
-import AgentPluginPanel from '../../components/plugins/AgentPluginPanel.vue'
 import PageScroll from '../../components/PageScroll.vue'
 import PluginPanelHeader from '../../components/plugins/PluginPanelHeader.vue'
 import PluginNavRail, { type PluginNavItem } from '../../components/plugins/PluginNavRail.vue'
@@ -20,7 +19,6 @@ import {
   pickPluginFolder,
   pickPluginZip,
   publishEvent,
-  getAgentNotificationEnabled,
   type ExternalPluginInfo,
 } from '../../api/tauri'
 import { loadExternalPlugins } from '../../plugins/loadExternalPlugins'
@@ -29,7 +27,7 @@ const { t } = useI18n()
 const message = useMessage()
 const pluginRegistry = usePluginRegistry()
 
-const VISIBLE_PLUGIN_IDS = ['rest', 'agent'] as const
+const VISIBLE_PLUGIN_IDS = ['rest'] as const
 type VisiblePluginId = (typeof VISIBLE_PLUGIN_IDS)[number]
 
 const selectedId = ref<string>('')
@@ -41,7 +39,6 @@ const testingId = ref<string | null>(null)
 const searchQuery = ref('')
 const builtinEnabled = ref<Record<VisiblePluginId, boolean>>({
   rest: true,
-  agent: false,
 })
 
 let settingsStore: Store | null = null
@@ -77,11 +74,6 @@ async function refreshBuiltinEnabled() {
     builtinEnabled.value.rest = rest?.enabled ?? true
   } catch {
     builtinEnabled.value.rest = false
-  }
-  try {
-    builtinEnabled.value.agent = await getAgentNotificationEnabled()
-  } catch {
-    builtinEnabled.value.agent = false
   }
 }
 
@@ -198,7 +190,6 @@ const plugins = computed((): PluginNavItem[] => {  const builtins = VISIBLE_PLUG
 
 const fallbackDetail: Record<VisiblePluginId, Component> = {
   rest: RestPluginPanel,
-  agent: AgentPluginPanel,
 }
 
 const selectedExternal = computed(() =>
@@ -431,13 +422,6 @@ async function onTestExternal(p: ExternalPluginInfo) {
             aria-hidden="true"
           />
           <component
-            v-else-if="activeHeader.icon === 'agent'"
-            :is="Bot"
-            :size="22"
-            :stroke-width="2"
-            aria-hidden="true"
-          />
-          <component
             v-else-if="activeHeader.icon === 'external'"
             :is="AlarmClock"
             :size="22"
@@ -550,6 +534,16 @@ async function onTestExternal(p: ExternalPluginInfo) {
   box-sizing: border-box;
   margin: 0 auto;
   padding: 1.5rem 1rem 2rem;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+.plugin-detail :where(h1, h2, h3, p, button, input, textarea, label, span, li) {
+  font-family: inherit;
+  line-height: inherit;
 }
 
 .disabled-overlay {
