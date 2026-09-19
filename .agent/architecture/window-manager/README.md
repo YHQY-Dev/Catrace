@@ -119,10 +119,13 @@ use macos as platform;
 
 ## Z 序约束（重要）
 
-窗口在 `WebviewWindowBuilder::always_on_top(true)` 时已获得 `WS_EX_TOPMOST`，始终在 topmost 层。**不要额外调用 `SetWindowPos(HWND_TOPMOST)` 推高 Z 序。**
+窗口在 `WebviewWindowBuilder::always_on_top(true)` 时已获得 `WS_EX_TOPMOST`，平时应保持在 topmost 层。**不要每次 show 都 `SetWindowPos(HWND_TOPMOST)` 推高 Z 序**（全屏独占游戏会被切出）。
+
+例外：锁屏/解锁可能清掉复用 HWND 的 `WS_EX_TOPMOST`。`ensure_topmost_style` **只在该位缺失时**补一次 `HWND_TOPMOST` + `SWP_NOACTIVATE`。
 
 - `apply_no_activate_style`：`Some(HWND(null))` + `SWP_NOZORDER`，只应用样式不动 Z 序
-- `show_no_activate`：去掉 `SetWindowPos(HWND_TOPMOST)`，`ShowWindow` + 已有 `WS_EX_TOPMOST` 足够
+- `show_no_activate`：先 `ShowWindow(SW_SHOWNOACTIVATE)` 路径上检查 TOPMOST，缺了才补
 - `restore_normal_style`：`Some(HWND(null))` + `SWP_NOZORDER`，只去掉 `WS_EX_NOACTIVATE` 不动 Z 序
+- `ensure_toast_window_visible` 已可见短路：sticky 卡过夜时也要跑同一检查
 
 为什么这样设计详见 [无焦点弹出特性：Z 序约束演变](../features/window-manager/README.md#z-序约束演变)。

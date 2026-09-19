@@ -27,7 +27,8 @@ window_manager 是 Tauri 插件形式的窗口管理模块，核心能力：**�
 
 1. **初版**：`apply_no_activate_style` 和 `show_no_activate` 的 `SetWindowPos` 带了 `SWP_NOZORDER`，此时 `HWND_TOPMOST` 被忽略 → 不置顶（bug），但也不推高 Z 序
 2. **commit `3c9d0b3`**：去掉 `SWP_NOZORDER` 修复置顶 bug → `HWND_TOPMOST` 真正生效 → **每次 Toast 弹出把窗口推到 topmost 最顶层 → Windows 将全屏独占模式游戏切出全屏**
-3. **当前**：窗口已有 `always_on_top(true)` 的 `WS_EX_TOPMOST`，不需要额外推高。`apply_no_activate_style` 和 `restore_normal_style` 都带 `SWP_NOZORDER` 只改样式，`show_no_activate` 去掉 `SetWindowPos(HWND_TOPMOST)`。
+3. **2026-07-14 后**：窗口已有 `always_on_top(true)` 的 `WS_EX_TOPMOST`，不需要额外推高。`apply_no_activate_style` 和 `restore_normal_style` 都带 `SWP_NOZORDER` 只改样式，`show_no_activate` 去掉每次 `SetWindowPos(HWND_TOPMOST)`。
+4. **2026-09-19**：锁屏/解锁会清掉复用 HWND 上的 `WS_EX_TOPMOST`。show / ensure 时**仅在该位缺失**才 `HWND_TOPMOST` + `SWP_NOACTIVATE`。见 [锁屏解锁后 TOPMOST 丢失](../toast-window/锁屏解锁后TOPMOST丢失需在show时按需自愈.md)。
 
 ### 隐藏复用
 

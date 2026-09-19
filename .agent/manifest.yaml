@@ -85,6 +85,7 @@ features:
       - .agent/features/toast-window/外部插件通过payload-toastStyle选择默认或独立卡片外壳.md
       - .agent/features/toast-window/full-screen-click-through-overlay-windows-implementation.md
       - .agent/features/toast-window/toast小窗化实现-右下角定位-内容尺寸上报-与去穿透.md
+      - .agent/features/toast-window/锁屏解锁后TOPMOST丢失需在show时按需自愈.md
     related:
       - reminder
       - water-reminder
@@ -269,6 +270,7 @@ reference:
   - .agent/reference/windows-PowerShell控制台GBK码页导致UTF8字节误判.md
 
 bugs:
+  - .agent/bugs/2026-09-19-锁屏解锁后toast丢失TOPMOST且Win+D可最小化.md
   - .agent/bugs/2026-08-31-sidecar重启误杀其他插件的子进程树.md
   - .agent/bugs/2026-08-27-toast点击卡片无法抢焦点因inline-plugin命令未授权capability.md
   - .agent/bugs/2026-08-27-toast小窗增高时卡片闪到任务栏.md
