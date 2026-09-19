@@ -20,7 +20,7 @@ pub async fn set_window_active_mode<R: Runtime>(window: WebviewWindow<R>, active
 }
 
 pub use platform::{
-    hide_window_internal, os_text_scale_factor, set_window_active_mode_internal,
+    ensure_reminder_topmost, hide_window_internal, os_text_scale_factor, set_window_active_mode_internal,
     set_window_rect_physical, show_reminder_no_activate,
 };
 

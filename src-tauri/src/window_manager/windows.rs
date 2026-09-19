@@ -4,9 +4,9 @@ use windows::Win32::System::Threading::{AttachThreadInput, GetCurrentThreadId};
 use windows::Win32::UI::Input::KeyboardAndMouse::{SetActiveWindow, SetFocus};
 use windows::Win32::UI::WindowsAndMessaging::{
     GetForegroundWindow, GetWindowLongPtrW, GetWindowRect, GetWindowThreadProcessId,
-    SetForegroundWindow, SetWindowLongPtrW, SetWindowPos, ShowWindow, GWL_EXSTYLE,
+    SetForegroundWindow, SetWindowLongPtrW, SetWindowPos, ShowWindow, GWL_EXSTYLE, HWND_TOPMOST,
     SWP_FRAMECHANGED, SWP_NOMOVE, SWP_NOACTIVATE, SWP_NOOWNERZORDER, SWP_NOSIZE, SWP_NOZORDER,
-    SWP_SHOWWINDOW, SW_HIDE, SW_SHOWNOACTIVATE, WS_EX_NOACTIVATE,
+    SWP_SHOWWINDOW, SW_HIDE, SW_SHOWNOACTIVATE, WS_EX_NOACTIVATE, WS_EX_TOPMOST,
 };
 
 use crate::{log_info, log_warn};
@@ -44,6 +44,63 @@ pub fn os_text_scale_factor() -> f64 {
 
 fn window_hwnd(window: &WebviewWindow<tauri::Wry>) -> Option<HWND> {
     window.hwnd().ok().map(|h| HWND(h.0 as *mut _))
+}
+
+fn exstyle_bits(hwnd: HWND) -> isize {
+    unsafe { GetWindowLongPtrW(hwnd, GWL_EXSTYLE) }
+}
+
+fn has_exstyle(style: isize, bit: u32) -> bool {
+    style & bit as isize != 0
+}
+
+/// 锁屏/解锁或 DWM 复位后，WS_EX_TOPMOST 可能被清掉。
+/// 仅在缺失时才 SetWindowPos(HWND_TOPMOST)，避免每次 show 都推 Z 序（全屏游戏会被切出）。
+fn ensure_topmost_style(hwnd: HWND) -> bool {
+    let style = exstyle_bits(hwnd);
+    if has_exstyle(style, WS_EX_TOPMOST.0) {
+        return false;
+    }
+    log_warn!(
+        "toast-win",
+        "ensure_topmost: WS_EX_TOPMOST missing, restoring hwnd={:?} ex=0x{:x} noact={}",
+        hwnd,
+        style,
+        has_exstyle(style, WS_EX_NOACTIVATE.0)
+    );
+    let ok = unsafe {
+        SetWindowPos(
+            hwnd,
+            Some(HWND_TOPMOST),
+            0,
+            0,
+            0,
+            0,
+            SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE,
+        )
+        .is_ok()
+    };
+    let after = exstyle_bits(hwnd);
+    log_warn!(
+        "toast-win",
+        "ensure_topmost: restored={} hwnd={:?} ex=0x{:x} topmost={}",
+        ok,
+        hwnd,
+        after,
+        has_exstyle(after, WS_EX_TOPMOST.0)
+    );
+    ok
+}
+
+/// 已可见的 Toast 也可能丢 TOPMOST（锁屏解锁后 sticky 卡还在，ensure 会提前 return）。
+pub fn ensure_reminder_topmost<R: Runtime>(window: &WebviewWindow<R>) {
+    if !is_reminder_window(window) {
+        return;
+    }
+    let wry_window = cast_to_wry(window);
+    if let Some(hwnd) = window_hwnd(wry_window) {
+        let _ = ensure_topmost_style(hwnd);
+    }
 }
 
 fn apply_window_rect(hwnd: HWND, x: i32, y: i32, width: i32, height: i32) -> bool {
@@ -198,12 +255,17 @@ fn show_no_activate(window: &WebviewWindow<tauri::Wry>) {
     if let Some(hwnd) = window_hwnd(window) {
         unsafe {
             apply_no_activate_style(hwnd);
+            let _ = ensure_topmost_style(hwnd);
             let prev = ShowWindow(hwnd, SW_SHOWNOACTIVATE);
+            let style = exstyle_bits(hwnd);
             log_info!(
                 "toast-win",
-                "ShowWindow(SW_SHOWNOACTIVATE) hwnd={:?} prev_visible={}",
+                "ShowWindow(SW_SHOWNOACTIVATE) hwnd={:?} prev_visible={} ex=0x{:x} topmost={} noact={}",
                 hwnd,
-                prev.as_bool()
+                prev.as_bool(),
+                style,
+                has_exstyle(style, WS_EX_TOPMOST.0),
+                has_exstyle(style, WS_EX_NOACTIVATE.0)
             );
         }
     } else {

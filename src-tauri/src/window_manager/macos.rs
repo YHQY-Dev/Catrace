@@ -23,6 +23,9 @@ pub fn hide_window_internal<R: Runtime>(
 /// 内部实现：动态切换窗口激活模式（macOS 暂为空实现）
 pub fn set_window_active_mode_internal<R: Runtime>(_window: &WebviewWindow<R>, _active: bool) {}
 
+/// Windows 上用于锁屏后补回 TOPMOST；其它平台无需处理。
+pub fn ensure_reminder_topmost<R: Runtime>(_window: &WebviewWindow<R>) {}
+
 /// 内部便捷函数：显示提醒窗口
 pub fn show_reminder_no_activate(_app_handle: &tauri::AppHandle, window: &tauri::WebviewWindow) {
     let window = window.clone();

@@ -313,6 +313,8 @@ pub fn ensure_toast_window_visible(app_handle: &tauri::AppHandle) {
     // 已可见：连点堆叠时不必反复抢 mutex / Win32 show / eval
     if let Some(window) = app_handle.get_webview_window(TOAST_WINDOW_LABEL) {
         if window.is_visible().unwrap_or(false) {
+            // sticky 卡跨过锁屏后窗口仍可见，不会再走 show；这里补回可能被 DWM 清掉的 TOPMOST。
+            window_manager::ensure_reminder_topmost(&window);
             return;
         }
     }
@@ -325,6 +327,7 @@ pub fn ensure_toast_window_visible(app_handle: &tauri::AppHandle) {
         if let Some(window) = app.get_webview_window(TOAST_WINDOW_LABEL) {
             if window.is_visible().unwrap_or(false) {
                 log_info!("toast-win", "ensure: already visible (double-check under lock), skip");
+                window_manager::ensure_reminder_topmost(&window);
                 return;
             }
             log_info!(
