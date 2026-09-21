@@ -5,6 +5,7 @@ features:
       - .agent/features/plugin-center/插件详情内容区外壳收归宿主-plugin-detail-面板只出业务.md
       - .agent/features/plugin-center/unify-plugin-panel-shell-and-section-for-agent-rest-panels.md
       - .agent/features/plugin-center/plugin-activity-getRecords-历史分钟记录.md
+      - .agent/features/plugin-center/sidecar-缺node时一键安装便携Node.md
       - .agent/features/plugin-center/插件状态排序和统一详情顶栏实现约定.md
       - .agent/features/plugin-center/插件中心-sidecar本机进程徽章与信任文案展示.md
       - .agent/features/plugin-center/插件开关只启停当前sidecar-刷新按钮才按enable全量重启.md
@@ -29,6 +30,7 @@ features:
       - database
       - settings
       - desktop-event-os
+      - input-monitoring
   water-reminder:
     docs:
       - .agent/features/water-reminder/README.md
@@ -98,6 +100,7 @@ features:
   fullscreen-reminder:
     docs:
       - .agent/features/fullscreen-reminder/README.md
+      - .agent/features/fullscreen-reminder/settle只看全屏窗口是否存在-不要缓存fullscreen_active.md
     related:
       - reminder
       - theme
@@ -123,6 +126,7 @@ features:
       - i18n
       - water-reminder
       - reminder
+      - input-monitoring
   media-audio:
     docs:
       - .agent/features/media-audio/README.md
@@ -146,9 +150,13 @@ features:
   input-monitoring:
     docs:
       - .agent/features/input-monitoring/README.md
+      - .agent/features/input-monitoring/macos-无辅助功能权限时用系统空闲秒数兜底忙闲.md
+      - .agent/features/input-monitoring/待做-mac包要用Apple-Developer-ID签名才能更新后保留辅助功能授权.md
     related:
       - platform-input
       - desktop-event-os
+      - reminder
+      - app-shell
   logging:
     docs:
       - .agent/features/logging/README.md
@@ -198,6 +206,7 @@ architecture:
       - dashboard
       - toast-window
       - plugin-center
+      - input-monitoring
   window-manager:
     docs:
       - .agent/features/window-manager/README.md
@@ -270,6 +279,8 @@ reference:
   - .agent/reference/windows-PowerShell控制台GBK码页导致UTF8字节误判.md
 
 bugs:
+  - .agent/bugs/2026-09-20-插件详情顶栏插槽图标scoped样式失效撑破布局.md
+  - .agent/bugs/2026-09-19-macOS更新后辅助功能授权失效导致一直休息.md
   - .agent/bugs/2026-09-21-fullscreen-双屏只盖一块屏.md
   - .agent/bugs/2026-09-19-锁屏解锁后toast丢失TOPMOST且Win+D可最小化.md
   - .agent/bugs/2026-08-31-sidecar重启误杀其他插件的子进程树.md
@@ -318,6 +329,10 @@ skills:
       - event-sdk
 
 devlog:
+  - .agent/devlog/2026-09-20-便携Node安装补上macOS与Linux.md
+  - .agent/devlog/2026-09-20-mac不催辅助功能授权-横幅和设置项都藏掉.md
+  - .agent/devlog/2026-09-20-sidecar缺node一键安装便携Node与详情页整页遮罩.md
+  - .agent/devlog/2026-09-19-macos更新后辅助功能失效用空闲秒数兜底.md
   - .agent/devlog/2026-09-03-插件页统一使用-Lucide-图标.md
   - .agent/devlog/2026-09-01-sidecar开关不再全量重启以免误杀其他插件进程树.md
   - .agent/devlog/2026-08-31-更新支持换源Toast也能选.md
@@ -346,6 +361,6 @@ devlog:
   - .agent/devlog/2026-07-25-插件面板header与左侧导航栏组件化拆分.md
 
 current:
-  plan: .agent/features/toast-window/README.md
-  phase: 外部插件可通过 payload.toastStyle 选择宿主默认或 standalone 卡片外壳（2026-09-16，工作树未提交）
-  next: 验证 agent-notify standalone 卡片实际布局；确认后再决定是否提交
+  plan: .agent/features/plugin-center/sidecar-缺node时一键安装便携Node.md
+  phase: 便携 Node 一键安装已覆盖 Win/mac/Linux（PR #75）；mac 辅助功能走兜底、不催授权
+  next: 下载加超时或非中文先走 nodejs.org；mac Developer ID 签名见 input-monitoring 待做；签名稳定前不要把授权横幅挂回主窗
