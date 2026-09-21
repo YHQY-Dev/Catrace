@@ -270,6 +270,7 @@ reference:
   - .agent/reference/windows-PowerShell控制台GBK码页导致UTF8字节误判.md
 
 bugs:
+  - .agent/bugs/2026-09-21-fullscreen-双屏只盖一块屏.md
   - .agent/bugs/2026-09-19-锁屏解锁后toast丢失TOPMOST且Win+D可最小化.md
   - .agent/bugs/2026-08-31-sidecar重启误杀其他插件的子进程树.md
   - .agent/bugs/2026-08-27-toast点击卡片无法抢焦点因inline-plugin命令未授权capability.md
